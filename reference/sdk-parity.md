@@ -15,6 +15,30 @@ SDK refs: rust-sdk, go-sdk, node-sdk, python-sdk, dotnet-sdk, haskell-sdk.
 
 ---
 
+## Spec / proto-gen version per SDK
+
+Each SDK depends on generated code from a specific `spec` release. The umbrella
+currently pins `spec/` at **v0.19.0** (`v0.19.0-3-g04b3422`); an SDK is
+"current" when its proto-gen dependency matches that.
+
+| SDK | Dependency | Version | vs pinned spec (v0.19.0) |
+|---|---|---|:--:|
+| rust-sdk | `utxorpc-spec` (crate) | 0.18.1 | ⚠️ behind |
+| go-sdk | `github.com/utxorpc/go-codegen` | v0.19.0 | ✅ current |
+| node-sdk | `@utxorpc/spec` (npm) | 0.18.1 | ⚠️ behind |
+| python-sdk | `utxorpc-spec` (pypi) | 0.18.1 | ⚠️ behind |
+| dotnet-sdk | `Utxorpc.Spec` (nuget) | 0.18.1-alpha | ⚠️ behind |
+| haskell-sdk | `utxorpc` (hackage) | ≥0.0.18 <0.0.19 | ⚠️ behind¹ |
+
+¹ haskell-sdk's `utxorpc` package uses an independent `0.0.x` numbering, not
+the `spec` tag scheme; `0.0.18` predates the `spec` v0.19.0 protos.
+
+Re-check these from each SDK's manifest (`Cargo.toml`, `go.mod`,
+`package.json`, `pyproject.toml`, `.csproj`, `.cabal`) on every re-derivation —
+a method can only be parity-complete if the underlying proto-gen exposes it.
+
+---
+
 ## Query
 | Method | Rust | Go | Node | Python | .NET | Haskell |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -67,9 +91,12 @@ SDK refs: rust-sdk, go-sdk, node-sdk, python-sdk, dotnet-sdk, haskell-sdk.
 
 ## Known parity gaps & themes
 
-1. **Spec lag.** Rust/Node/Python track `utxorpc-spec` ~v0.18.1 while `spec/`
-   is at v0.19.0 → `ReadState` (v1beta) is unimplemented everywhere. Bumping
-   spec deps is the single highest-leverage parity action.
+1. **Spec lag.** Only go-sdk tracks the pinned spec (go-codegen v0.19.0);
+   rust/node/python/dotnet are on 0.18.x and haskell on 0.0.18 (see version
+   table above). `ReadState` (new in v1beta) is exposed by no SDK — the
+   lagging deps can't surface it at all, and go-sdk hasn't wrapped it yet.
+   Bumping the proto-gen deps is the single highest-leverage parity action
+   for the five behind-spec SDKs.
 2. **`ReadData` / `ReadTx`** are nearly absent (only go-sdk has both; rust has
    `ReadTx`). Low-cost wins for SDK maintainers.
 3. **`EvalTx`** missing in rust/python/.NET/haskell — blocks off-chain
