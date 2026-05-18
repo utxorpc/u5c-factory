@@ -39,6 +39,20 @@ own docs for component-specific conventions** — this file only routes you ther
   their own repos, then bump the pointers here (see below).
 - **Repo-wide conventions, this routing map, agent guidance** → this file.
 
+## Skills
+
+Reusable, cross-cutting agent procedures live in `skills/<name>/SKILL.md` —
+the canonical, agent-agnostic store. Each is a self-contained directory with a
+`SKILL.md` (YAML frontmatter + body); copy `skills/_template/SKILL.md` to start
+a new one. Claude Code discovers them via `.claude/skills` (a symlink to
+`skills/`); agents without skill auto-loading should read the relevant
+`SKILL.md` directly.
+
+Skills here are **umbrella-level / cross-cutting only** (e.g. bumping a
+submodule pointer, regenerating bindings after a spec change, cutting a
+coordinated release). Procedures specific to one SDK belong in that submodule's
+own repo, consistent with the routing rules above.
+
 ## Working with submodules
 
 - Submodules are **pinned to a specific commit**. Editing files inside a
