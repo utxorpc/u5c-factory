@@ -47,8 +47,11 @@ hand-authored truth. When a doc disagrees with `spec/` or an SDK, trust the
 submodule and update the doc.
 
 - `reference/sdk-api-surface.md` — the ideal, language-agnostic SDK API
-  surface plus a cross-SDK feature-parity matrix. Re-derive after any `spec/`
-  bump or coordinated SDK release.
+  surface (normative-by-derivation; "what should an SDK expose?"). Re-derive
+  after any `spec/` bump.
+- `reference/sdk-parity.md` — cross-SDK feature-parity matrix ("what does
+  each SDK expose today?"). Re-derive after any `spec/` bump or SDK pointer
+  update.
 
 ## Skills
 

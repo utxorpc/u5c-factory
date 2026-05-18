@@ -1,14 +1,16 @@
-# UTxO RPC — Ideal SDK API Surface & Parity Reference
+# UTxO RPC — Ideal SDK API Surface
 
-**Status:** living reference, reverse-engineered from the spec and existing SDKs.
-**Source of truth for methods:** the `spec/` submodule (protobuf). This document
-describes the *ideal, language-agnostic surface* an SDK should expose and tracks
-how each SDK currently measures against it.
+**Status:** living reference, derived from the protocol.
+**Source of truth for methods:** the `spec/` submodule (protobuf).
 
-> This artifact is **derived**, not authoritative. The `spec/` proto definitions
-> define the protocol; SDK repos define their actual code. When they disagree,
-> trust the submodules and update this file. Re-derive after any spec bump or
-> coordinated SDK release (see [bumping skills](../AGENTS.md#skills)).
+This document describes the *ideal, language-agnostic surface* an SDK should
+expose. It is **normative-by-derivation**: it follows from the protocol, not
+from any SDK's implementation. For how each SDK currently measures against it,
+see the separate [SDK parity matrix](./sdk-parity.md).
+
+> Derived, not authoritative. The `spec/` proto definitions define the
+> protocol. When this doc disagrees with `spec/`, trust the submodule and
+> update this file. Re-derive after any spec bump.
 
 ---
 
@@ -60,8 +62,8 @@ Derived from where the SDKs already agree; these are the recommended norms.
 
 - **Client construction.** Per-service clients (`QueryClient`, `SubmitClient`,
   `SyncClient`, `WatchClient`) built from `{ uri, headers?, tls?, ... }`.
-  Builder (Rust), options object (Go/Node), constructor (Python/.NET), or
-  config helper (Haskell) — all acceptable; the *inputs* should match.
+  Builder, options object, constructor, or config helper — all acceptable; the
+  *inputs* should match.
 - **Auth.** Pass-through metadata/headers map (e.g. `dmtr-api-key`). No bespoke
   bearer/OAuth abstractions — auth is a gRPC-metadata concern, per spec.
 - **TLS.** Auto-derived from URI scheme (`https://`) or an explicit flag;
@@ -77,86 +79,22 @@ Derived from where the SDKs already agree; these are the recommended norms.
 
 ### Recommended but not yet universal
 Retry/backoff, connection pooling, automatic pagination iterators, batch
-submit, and high-level query helpers (by address / asset / payment part) — see
-matrix. These are *aspirational* parity targets, not spec requirements.
+submit, and high-level query helpers (by address / asset / payment part).
+These are *aspirational* targets, not spec requirements; current adoption is
+tracked in the [parity matrix](./sdk-parity.md).
 
 ---
 
-## 3. Feature-parity matrix
+## 3. Maintenance
 
-Legend: ✅ implemented & idiomatic · ⚠️ partial / workaround / non-idiomatic ·
-❌ missing · — not applicable.
-SDK refs: rust-sdk, go-sdk, node-sdk, python-sdk, dotnet-sdk, haskell-sdk.
-
-### Query
-| Method | Rust | Go | Node | Python | .NET | Haskell |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| ReadParams | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ReadUtxos | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SearchUtxos | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ReadData | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| ReadTx | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| ReadGenesis | ✅ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
-| ReadEraSummary | ✅ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
-| ReadState | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-
-### Submit
-| Method | Rust | Go | Node | Python | .NET | Haskell |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| SubmitTx | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| EvalTx | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| WaitForTx | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ReadMempool | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| WatchMempool | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-### Sync
-| Method | Rust | Go | Node | Python | .NET | Haskell |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| FetchBlock | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| DumpHistory | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| FollowTip | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ReadTip | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-### Watch
-| Method | Rust | Go | Node | Python | .NET | Haskell |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| WatchTx | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-### Cross-cutting capabilities
-| Capability | Rust | Go | Node | Python | .NET | Haskell |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| TLS config | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Header/metadata auth | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Idiomatic streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (fold) |
-| Sync **and** async API | — | ⚠️ (ctx) | ✅ | ✅ | ❌ (async-only) | — (IO) |
-| FieldMask support | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ | ⚠️ |
-| Cursor pagination params | ✅ | ✅ | ⚠️ | ✅ | ✅ | ⚠️ |
-| Auto-pagination iterator | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Retry / backoff | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Batch submit | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| High-level query helpers | ❌ | ⚠️ (cardano) | ✅ | ❌ | ⚠️ (predicate) | ❌ |
-
----
-
-## 4. Known parity gaps & themes
-
-1. **Spec lag.** Rust/Node/Python track `utxorpc-spec` ~v0.18.1 while `spec/`
-   is at v0.19.0 → `ReadState` (v1beta) is unimplemented everywhere. Bumping
-   spec deps is the single highest-leverage parity action.
-2. **`ReadData` / `ReadTx`** are nearly absent (only go-sdk has both; rust has
-   `ReadTx`). Low-cost wins for SDK maintainers.
-3. **`EvalTx`** missing in rust/python/.NET/haskell — blocks off-chain
-   fee/script workflows in those languages.
-4. **`DumpHistory` absent in go-sdk**, **`ReadMempool` only in go/haskell** —
-   uneven Sync/Submit coverage.
-5. **Universal gaps:** no SDK offers retry/backoff or auto-pagination
-   iterators; batch submit only in .NET. Good cross-cutting roadmap items.
-
----
-
-## 5. Maintenance
-
-- Re-run the derivation when `spec/` is bumped or any SDK pointer is updated.
-- Keep cell values conservative: mark ✅ only for an exposed, idiomatic public
-  method; use ⚠️ for workarounds (raw proto access, non-idiomatic shape).
-- This is umbrella-scoped; per-SDK design notes belong in that SDK's repo.
+- This is the **normative shape** — change it only when the protocol changes.
+  Re-derive after any `spec/` bump.
+- Implementation status of these methods/conventions lives in
+  [`sdk-parity.md`](./sdk-parity.md), not here. Keep the two separate: this
+  doc answers "what should an SDK expose?", the matrix answers "what does each
+  SDK expose today?".
+- This artifact stays in the wrapper (not `spec/`): it is cross-cutting and
+  the umbrella is its owner. Promoting it into `spec/` as a formal conformance
+  document is only warranted if `spec` maintainers choose to own it as a
+  requirement.
+- Umbrella-scoped; per-SDK design notes belong in that SDK's repo.
