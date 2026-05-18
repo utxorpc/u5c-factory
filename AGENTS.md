@@ -39,6 +39,17 @@ own docs for component-specific conventions** — this file only routes you ther
   their own repos, then bump the pointers here (see below).
 - **Repo-wide conventions, this routing map, agent guidance** → this file.
 
+## Reference artifacts
+
+Cross-cutting, derived reference docs live in `reference/`. These are
+synthesized from the spec and submodules — authoritative-by-derivation, not
+hand-authored truth. When a doc disagrees with `spec/` or an SDK, trust the
+submodule and update the doc.
+
+- `reference/sdk-api-surface.md` — the ideal, language-agnostic SDK API
+  surface plus a cross-SDK feature-parity matrix. Re-derive after any `spec/`
+  bump or coordinated SDK release.
+
 ## Skills
 
 Reusable, cross-cutting agent procedures live in `skills/<name>/SKILL.md` —
