@@ -1,0 +1,21 @@
+[submodule "spec"]
+	path = spec
+	url = https://github.com/utxorpc/spec.git
+[submodule "sdks/rust-sdk"]
+	path = sdks/rust-sdk
+	url = https://github.com/utxorpc/rust-sdk.git
+[submodule "sdks/node-sdk"]
+	path = sdks/node-sdk
+	url = https://github.com/utxorpc/node-sdk.git
+[submodule "sdks/go-sdk"]
+	path = sdks/go-sdk
+	url = https://github.com/utxorpc/go-sdk.git
+[submodule "sdks/haskell-sdk"]
+	path = sdks/haskell-sdk
+	url = https://github.com/utxorpc/haskell-sdk.git
+[submodule "sdks/python-sdk"]
+	path = sdks/python-sdk
+	url = https://github.com/utxorpc/python-sdk.git
+[submodule "sdks/dotnet-sdk"]
+	path = sdks/dotnet-sdk
+	url = https://github.com/utxorpc/dotnet-sdk.git
