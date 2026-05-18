@@ -23,15 +23,21 @@ currently pins `spec/` at **v0.19.0** (`v0.19.0-3-g04b3422`); an SDK is
 
 | SDK | Dependency | Version | vs pinned spec (v0.19.0) |
 |---|---|---|:--:|
-| rust-sdk | `utxorpc-spec` (crate) | 0.18.1 | ⚠️ behind |
+| rust-sdk | `utxorpc-spec` (crate) | 0.19.0 | ✅ current (build-verified) |
 | go-sdk | `github.com/utxorpc/go-codegen` | v0.19.0 | ✅ current |
-| node-sdk | `@utxorpc/spec` (npm) | 0.18.1 | ⚠️ behind |
-| python-sdk | `utxorpc-spec` (pypi) | 0.18.1 | ⚠️ behind |
-| dotnet-sdk | `Utxorpc.Spec` (nuget) | 0.18.1-alpha | ⚠️ behind |
-| haskell-sdk | `utxorpc` (hackage) | ≥0.0.18 <0.0.19 | ⚠️ behind¹ |
+| node-sdk | `@utxorpc/spec` (npm) | 0.18.1 | ⚠️ behind² |
+| python-sdk | `utxorpc-spec` (pypi) | 0.19.0 | ⚠️ current, unverified³ |
+| dotnet-sdk | `Utxorpc.Spec` (nuget) | 0.19.0-alpha | ⚠️ current, unverified³ |
+| haskell-sdk | `utxorpc` (hackage) | ≥0.0.19 <0.0.20 | ⚠️ current, unverified³ ¹ |
 
 ¹ haskell-sdk's `utxorpc` package uses an independent `0.0.x` numbering, not
-the `spec` tag scheme; `0.0.18` predates the `spec` v0.19.0 protos.
+the `spec` tag scheme; `0.0.19.0` is the Hackage release matching `spec`
+v0.19.0.
+² `@utxorpc/spec` v0.19.0 is **not yet published to npm** (latest is 0.18.1);
+node-sdk cannot be bumped until it is. Left intentionally behind.
+³ Manifest bumped to the v0.19.0-line release, but not build-verified —
+`poetry` / `dotnet` / `cabal` toolchains were unavailable in the bump
+environment. Verify via each SDK's own CI/PR before treating as done.
 
 Re-check these from each SDK's manifest (`Cargo.toml`, `go.mod`,
 `package.json`, `pyproject.toml`, `.csproj`, `.cabal`) on every re-derivation —
@@ -91,12 +97,15 @@ a method can only be parity-complete if the underlying proto-gen exposes it.
 
 ## Known parity gaps & themes
 
-1. **Spec lag.** Only go-sdk tracks the pinned spec (go-codegen v0.19.0);
-   rust/node/python/dotnet are on 0.18.x and haskell on 0.0.18 (see version
-   table above). `ReadState` (new in v1beta) is exposed by no SDK — the
-   lagging deps can't surface it at all, and go-sdk hasn't wrapped it yet.
-   Bumping the proto-gen deps is the single highest-leverage parity action
-   for the five behind-spec SDKs.
+1. **Spec lag (largely resolved).** After the `bump-sdk-spec` run, rust/go/
+   python/dotnet/haskell manifests now target the v0.19.0-line release;
+   rust-sdk is build-verified, the rest manifest-bumped but unverified
+   (toolchains absent — verify via each SDK's CI). **node-sdk is the only
+   remaining laggard**: `@utxorpc/spec` v0.19.0 is not yet on npm, so it
+   stays on 0.18.1 until that package is published. `ReadState` (new in
+   v1beta) is still exposed by no SDK — the proto-gen is now present in most,
+   but the SDKs have not yet wrapped the method; that is now an SDK-code task,
+   no longer a dependency-version blocker.
 2. **`ReadData` / `ReadTx`** are nearly absent (only go-sdk has both; rust has
    `ReadTx`). Low-cost wins for SDK maintainers.
 3. **`EvalTx`** missing in rust/python/.NET/haskell — blocks off-chain
