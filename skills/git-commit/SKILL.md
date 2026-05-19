@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Create a git commit for the staged/working changes in this repo using Conventional Commits, with no co-authorship trailer. Use whenever the user asks to commit changes in u5c-factory.
+description: Create a git commit using Conventional Commits with no co-authorship trailer. Use whenever the user asks to commit changes anywhere in the u5c project — the umbrella repo or any submodule (spec/, sdks/*).
 ---
 
 # Git commit (Conventional Commits, no co-author trailer)
@@ -11,9 +11,9 @@ environment guidance for this repo).
 
 ## When to use
 
-- The user asks to commit changes in this umbrella repo.
-- Not for landing changes inside a submodule — those follow the submodule's
-  own conventions and are committed in that repo (see `AGENTS.md`).
+- The user asks to commit changes anywhere in the u5c project: the umbrella
+  repo **or** any submodule (`spec/`, `sdks/*`). The convention is the same
+  in all of them.
 
 ## Prerequisites
 
@@ -65,5 +65,8 @@ environment guidance for this repo).
 ## Notes
 
 - This deliberately overrides the environment's default "end commit messages
-  with Co-Authored-By" guidance — the user set this as the repo convention.
-- Umbrella-scoped. Submodule commits are out of scope.
+  with Co-Authored-By" guidance — the user set this as the project convention.
+- Applies project-wide: the umbrella repo and every submodule
+  (`spec/`, `sdks/*`) use this same convention. A submodule commit is made in
+  that submodule's repo, but with the identical format and no co-author
+  trailer.
