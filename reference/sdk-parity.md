@@ -1,15 +1,12 @@
 # UTxO RPC — SDK Feature-Parity Matrix
 
 **Status:** living reference, reverse-engineered from the SDK submodules.
-Tracks how each SDK measures against the normative references — the [ideal SDK
-API surface](./sdk-api-surface.md) and the [mandatory SDK CI
-requirements](./sdk-ci-requirements.md). Those docs answer *"what should an SDK
-do?"*; this doc answers *"what does each SDK do today?"* — for both API surface
-and CI conformance.
+What each SDK does today, against the [API surface](./sdk-api-surface.md) and
+[CI requirements](./sdk-ci-requirements.md).
 
-> Derived, not authoritative. SDK repos define their actual code. When a cell
-> disagrees with a submodule, trust the submodule and update this file.
-> Re-derive after any `spec/` bump or coordinated SDK release.
+> Derived, not authoritative. When a cell disagrees with a submodule, trust
+> the submodule and update this file. Re-derive after any `spec/` bump or SDK
+> pointer change.
 
 Legend: ✅ implemented & idiomatic · ⚠️ partial / workaround / non-idiomatic ·
 ❌ missing · — not applicable.
@@ -19,9 +16,8 @@ SDK refs: rust-sdk, go-sdk, node-sdk, python-sdk, dotnet-sdk, haskell-sdk.
 
 ## Spec / proto-gen version per SDK
 
-Each SDK depends on generated code from a specific `spec` release. The umbrella
-currently pins `spec/` at **v0.19.0** (`v0.19.0-3-g04b3422`); an SDK is
-"current" when its proto-gen dependency matches that.
+Umbrella pins `spec/` at **v0.19.0** (`v0.19.0-3-g04b3422`); "current" = the
+SDK's proto-gen dependency matches that.
 
 | SDK | Dependency | Version | vs pinned spec (v0.19.0) |
 |---|---|---|:--:|
@@ -32,59 +28,36 @@ currently pins `spec/` at **v0.19.0** (`v0.19.0-3-g04b3422`); an SDK is
 | dotnet-sdk | `Utxorpc.Spec` (nuget) | 0.19.0-alpha | ⚠️ current, unverified³ |
 | haskell-sdk | `utxorpc` (hackage) | ≥0.0.19 <0.0.20 | ⚠️ current, unverified³ ¹ |
 
-¹ haskell-sdk's `utxorpc` package uses an independent `0.0.x` numbering, not
-the `spec` tag scheme; `0.0.19.0` is the Hackage release matching `spec`
-v0.19.0.
-² `@utxorpc/spec` v0.19.0 is **not yet published to npm** (latest is 0.18.1);
-node-sdk cannot be bumped until it is. Left intentionally behind.
-³ Manifest bumped to the v0.19.0-line release, but not build-verified —
-`poetry` / `dotnet` / `cabal` toolchains were unavailable in the bump
-environment. Verify via each SDK's own CI/PR before treating as done.
-
-Re-check these from each SDK's manifest (`Cargo.toml`, `go.mod`,
-`package.json`, `pyproject.toml`, `.csproj`, `.cabal`) on every re-derivation —
-a method can only be parity-complete if the underlying proto-gen exposes it.
+¹ haskell `utxorpc` uses independent `0.0.x` numbering; `0.0.19.0` is the
+Hackage release matching `spec` v0.19.0.
+² `@utxorpc/spec` v0.19.0 not published to npm (npm `latest` is 0.18.1).
+³ Manifest bumped to the v0.19.0-line release; not build-verified
+(`poetry` / `dotnet` / `cabal` toolchains absent at bump time).
 
 ---
 
 ## CI conformance vs. mandatory contract
 
-Tracks each SDK's CI against the [mandatory SDK CI
-requirements](./sdk-ci-requirements.md). That doc answers *"what CI must an SDK
-run?"*; this section answers *"what does each SDK's CI do today?"*. Reverse-
-engineered from each SDK's `.github/workflows/`.
-
-A column is ✅ only when a CI workflow (not a release/publish-only workflow)
-satisfies it. "build"/"test" must run **on the mandated triggers** to count —
-a build or test that only runs on tag/release does not satisfy the contract.
+Each SDK's `.github/workflows/` against the
+[CI requirements](./sdk-ci-requirements.md). A cell is ✅ only for a CI
+workflow (not release/publish-only) running on the mandated trigger; a
+build/test that runs only on tag/release is ❌ for the contract.
 
 | SDK | PR trigger | main-push trigger | build job | test job | Conformant |
 |---|:--:|:--:|:--:|:--:|:--:|
-| rust-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (no workflows at all) |
-| go-sdk | ✅ | ✅ | ⚠️ | ✅ | ⚠️ (only near-conformant)¹ |
-| node-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (publish-on-release only) |
-| python-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (release-on-tag only)² |
-| dotnet-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (publish-on-release only)² |
-| haskell-sdk | ❌ | ❌ | ❌ | ⚠️ | ❌ (test exists, wrong trigger)³ |
+| rust-sdk | ❌ | ❌ | ❌ | ❌ | ❌ |
+| go-sdk | ✅ | ✅ | ⚠️ | ✅ | ⚠️ ¹ |
+| node-sdk | ❌ | ❌ | ❌ | ❌ | ❌ ² |
+| python-sdk | ❌ | ❌ | ❌ | ❌ | ❌ ² |
+| dotnet-sdk | ❌ | ❌ | ❌ | ❌ | ❌ ² |
+| haskell-sdk | ❌ | ❌ | ❌ | ⚠️ | ❌ ³ |
 
-¹ go-sdk `go-test.yml` triggers on `pull_request` and `push` (main + tags) and
-runs `go test ./...`, which compiles the module — but there is no dedicated
-`go build ./...` step, so "build" is ⚠️ (implicit via test). Closest to
-conformant; adding an explicit build step would make it ✅.
-² python-sdk / dotnet-sdk only build as part of a tag/`release`-triggered
-publish workflow. Build exists but never on PR or main push, so it does not
-satisfy the contract.
-³ haskell-sdk `release.yml` runs `stack test` but only on `workflow_dispatch`
-and tag push — never on PRs or main pushes. The capability is present; the
-trigger is non-conformant.
-
-**Summary:** the contract is currently met by **no SDK**; go-sdk is the only
-one close (missing just an explicit build step). The rest run build/test only
-at release time or not at all. These are the concrete remediation tasks per
-SDK; each is fixed in that SDK's own repo, not here.
-
-Re-derive this whenever an SDK pointer is bumped or the
-[CI requirements](./sdk-ci-requirements.md) contract changes.
+¹ go-sdk `go-test.yml` runs `go test ./...` on `pull_request` + `push`
+(main, tags); no dedicated `go build` step.
+² rust-sdk has no workflows; node/python/dotnet have only a
+release/publish-triggered workflow (no PR or main-push run).
+³ haskell `release.yml` runs `stack test` on `workflow_dispatch` + tag push
+only — not on PR or main push.
 
 ---
 
@@ -138,35 +111,10 @@ Re-derive this whenever an SDK pointer is bumped or the
 
 ---
 
-## Known parity gaps & themes
-
-1. **Spec lag (largely resolved).** After the `bump-sdk-spec` run, rust/go/
-   python/dotnet/haskell manifests now target the v0.19.0-line release;
-   rust-sdk is build-verified, the rest manifest-bumped but unverified
-   (toolchains absent — verify via each SDK's CI). **node-sdk is the only
-   remaining laggard**: `@utxorpc/spec` v0.19.0 is not yet on npm, so it
-   stays on 0.18.1 until that package is published. `ReadState` (new in
-   v1beta) is still exposed by no SDK — the proto-gen is now present in most,
-   but the SDKs have not yet wrapped the method; that is now an SDK-code task,
-   no longer a dependency-version blocker.
-2. **`ReadData` / `ReadTx`** are nearly absent (only go-sdk has both; rust has
-   `ReadTx`). Low-cost wins for SDK maintainers.
-3. **`EvalTx`** missing in rust/python/.NET/haskell — blocks off-chain
-   fee/script workflows in those languages.
-4. **`DumpHistory` absent in go-sdk**, **`ReadMempool` only in go/haskell** —
-   uneven Sync/Submit coverage.
-5. **Universal gaps:** no SDK offers retry/backoff or auto-pagination
-   iterators; batch submit only in .NET. Good cross-cutting roadmap items.
-
----
-
 ## Maintenance
 
-- Re-derive when `spec/` is bumped or any SDK pointer is updated. The matrix
-  is only meaningful relative to the SDK commits pinned by this umbrella's
-  submodules.
-- Keep cells conservative: ✅ only for an exposed, idiomatic public method;
-  ⚠️ for workarounds (raw proto access, non-idiomatic shape).
-- The expected/ideal shape lives in [`sdk-api-surface.md`](./sdk-api-surface.md);
-  do not restate normative requirements here.
-- Umbrella-scoped; per-SDK design notes belong in that SDK's repo.
+- Re-derive when `spec/` is bumped or any SDK pointer changes; cells are only
+  meaningful against the SDK commits this umbrella pins.
+- Cells conservative: ✅ only for an exposed, idiomatic public method.
+- Normative "should" lives in [`sdk-api-surface.md`](./sdk-api-surface.md) and
+  [`sdk-ci-requirements.md`](./sdk-ci-requirements.md); not restated here.
