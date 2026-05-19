@@ -1,9 +1,11 @@
 # UTxO RPC — SDK Feature-Parity Matrix
 
 **Status:** living reference, reverse-engineered from the SDK submodules.
-Tracks how each SDK measures against the [ideal SDK API
-surface](./sdk-api-surface.md). The surface doc answers *"what should an SDK
-expose?"*; this doc answers *"what does each SDK expose today?"*.
+Tracks how each SDK measures against the normative references — the [ideal SDK
+API surface](./sdk-api-surface.md) and the [mandatory SDK CI
+requirements](./sdk-ci-requirements.md). Those docs answer *"what should an SDK
+do?"*; this doc answers *"what does each SDK do today?"* — for both API surface
+and CI conformance.
 
 > Derived, not authoritative. SDK repos define their actual code. When a cell
 > disagrees with a submodule, trust the submodule and update this file.
@@ -42,6 +44,47 @@ environment. Verify via each SDK's own CI/PR before treating as done.
 Re-check these from each SDK's manifest (`Cargo.toml`, `go.mod`,
 `package.json`, `pyproject.toml`, `.csproj`, `.cabal`) on every re-derivation —
 a method can only be parity-complete if the underlying proto-gen exposes it.
+
+---
+
+## CI conformance vs. mandatory contract
+
+Tracks each SDK's CI against the [mandatory SDK CI
+requirements](./sdk-ci-requirements.md). That doc answers *"what CI must an SDK
+run?"*; this section answers *"what does each SDK's CI do today?"*. Reverse-
+engineered from each SDK's `.github/workflows/`.
+
+A column is ✅ only when a CI workflow (not a release/publish-only workflow)
+satisfies it. "build"/"test" must run **on the mandated triggers** to count —
+a build or test that only runs on tag/release does not satisfy the contract.
+
+| SDK | PR trigger | main-push trigger | build job | test job | Conformant |
+|---|:--:|:--:|:--:|:--:|:--:|
+| rust-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (no workflows at all) |
+| go-sdk | ✅ | ✅ | ⚠️ | ✅ | ⚠️ (only near-conformant)¹ |
+| node-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (publish-on-release only) |
+| python-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (release-on-tag only)² |
+| dotnet-sdk | ❌ | ❌ | ❌ | ❌ | ❌ (publish-on-release only)² |
+| haskell-sdk | ❌ | ❌ | ❌ | ⚠️ | ❌ (test exists, wrong trigger)³ |
+
+¹ go-sdk `go-test.yml` triggers on `pull_request` and `push` (main + tags) and
+runs `go test ./...`, which compiles the module — but there is no dedicated
+`go build ./...` step, so "build" is ⚠️ (implicit via test). Closest to
+conformant; adding an explicit build step would make it ✅.
+² python-sdk / dotnet-sdk only build as part of a tag/`release`-triggered
+publish workflow. Build exists but never on PR or main push, so it does not
+satisfy the contract.
+³ haskell-sdk `release.yml` runs `stack test` but only on `workflow_dispatch`
+and tag push — never on PRs or main pushes. The capability is present; the
+trigger is non-conformant.
+
+**Summary:** the contract is currently met by **no SDK**; go-sdk is the only
+one close (missing just an explicit build step). The rest run build/test only
+at release time or not at all. These are the concrete remediation tasks per
+SDK; each is fixed in that SDK's own repo, not here.
+
+Re-derive this whenever an SDK pointer is bumped or the
+[CI requirements](./sdk-ci-requirements.md) contract changes.
 
 ---
 
