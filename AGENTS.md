@@ -49,6 +49,9 @@ submodule and update the doc.
 - `reference/sdk-api-surface.md` — the ideal, language-agnostic SDK API
   surface (normative-by-derivation; "what should an SDK expose?"). Re-derive
   after any `spec/` bump.
+- `reference/sdk-pipeline.md` — the mandatory CI and release
+  pipeline contract every SDK repo must satisfy. A normative standard owned by
+  the umbrella.
 - `reference/sdk-parity.md` — cross-SDK feature-parity matrix ("what does
   each SDK expose today?"). Re-derive after any `spec/` bump or SDK pointer
   update.

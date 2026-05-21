@@ -49,7 +49,7 @@ submodule and update the doc.
 | Document | What it is |
 |----------|------------|
 | [`reference/sdk-api-surface.md`](./reference/sdk-api-surface.md)       | The ideal, language-agnostic SDK API surface — "what *should* an SDK expose?" Re-derive after any `spec/` bump. |
-| [`reference/sdk-ci-requirements.md`](./reference/sdk-ci-requirements.md) | The mandatory minimum CI contract every SDK must satisfy. A normative standard owned by the umbrella. |
+| [`reference/sdk-pipeline.md`](./reference/sdk-pipeline.md) | The mandatory CI and release pipeline contract every SDK repo must satisfy. A normative standard owned by the umbrella. |
 | [`reference/sdk-parity.md`](./reference/sdk-parity.md)                 | Cross-SDK feature-parity matrix — "what does each SDK expose *today*?" Re-derive after any `spec/` bump or SDK pointer update. |
 
 ## Skills
@@ -64,6 +64,6 @@ SDK belong in that submodule's own repo. Copy
 | Skill | What it does |
 |-------|--------------|
 | [`bump-sdk-spec`](./skills/bump-sdk-spec/SKILL.md)     | Bump every SDK submodule's UTxO RPC spec / proto-gen dependency to the latest published release. |
-| [`check-sdk-parity`](./skills/check-sdk-parity/SKILL.md) | Re-derive the cross-SDK feature-parity matrix from the submodules and rewrite `reference/sdk-parity.md`. |
+| [`check-sdk-parity`](./skills/check-sdk-parity/SKILL.md) | Re-derive the cross-SDK feature-parity matrix (RPC, CI, and release conformance) from the submodules and rewrite `reference/sdk-parity.md`. |
 | [`start-pr-queue`](./skills/start-pr-queue/SKILL.md)   | Open one PR per changed submodule and hand back an ordered merge plan — typically after a `bump-sdk-spec` run. |
 | [`git-commit`](./skills/git-commit/SKILL.md)         | Commit anywhere in the u5c project using Conventional Commits with no co-authorship trailer. |
