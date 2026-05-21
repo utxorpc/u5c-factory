@@ -2,7 +2,7 @@
 
 **Status:** living reference, reverse-engineered from the SDK submodules.
 What each SDK does today, against the [API surface](./sdk-api-surface.md) and
-[CI requirements](./sdk-ci-requirements.md).
+[pipeline requirements](./sdk-pipeline-requirements.md).
 
 > Derived, not authoritative. When a cell disagrees with a submodule, trust
 > the submodule and update this file. Re-derive after any `spec/` bump or SDK
@@ -42,8 +42,8 @@ matches spec v0.19.x. The `*.cabal` range `>=0.0.19 && <0.0.20` admits it, but
 
 ## CI conformance vs. mandatory contract
 
-Each SDK's `.github/workflows/` against the
-[CI requirements](./sdk-ci-requirements.md). A cell is ✅ only for a CI
+Each SDK's `.github/workflows/` against the CI pipeline contract in
+[pipeline requirements](./sdk-pipeline-requirements.md) §1. A cell is ✅ only for a CI
 workflow (not release/publish-only) running on the mandated trigger; a
 build/test that runs only on tag/release is ❌ for the contract.
 
@@ -63,6 +63,43 @@ build coverage.
 (`python -c "import utxorpc"`), not the `pytest` suite.
 ³ haskell-sdk `ci.yml` `test` job runs `stack build --test --no-run-tests` —
 test suites compile but are not executed.
+
+---
+
+## Release conformance vs. mandatory contract
+
+Each SDK's release workflow against the release pipeline contract in
+[pipeline requirements](./sdk-pipeline-requirements.md) §2. A stage cell is ✅ only
+for a dedicated, gated stage on the release path; ⚠️ for one that happens
+incidentally (e.g. via a `prepublish` hook or a build script) but is not a
+distinct gate. "registry/auth = spec" is ✅ only when the registry and the
+publish secret name match the `spec` repo's codegen exactly.
+
+| SDK | tag-push trigger | build stage | test stage | publish stage | registry/auth = spec | Conformant |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| rust-sdk | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ¹ |
+| go-sdk | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ ² |
+| node-sdk | ❌ | ⚠️ | ❌ | ✅ | ❌ | ❌ ³ |
+| python-sdk | ✅ | ❌ | ❌ | ⚠️ | ❌ | ❌ ⁴ |
+| dotnet-sdk | ❌ | ⚠️ | ❌ | ✅ | ⚠️ | ❌ ⁵ |
+| haskell-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ ⁶ |
+
+¹ rust-sdk has no release/publish workflow at all; `Cargo.toml` sets
+`publish = false`.
+² go-sdk `publish.yml` triggers on `v*.*.*` tags and creates a GitHub Release
++ Go-proxy notify, but runs no `go build` / `go test` gate beforehand.
+³ node-sdk `publish.yml` triggers on `release: [published]`, not a tag; build
+runs only via the `prepublish` hook; publish uses `NODE_AUTH_TOKEN` rather
+than the `spec` repo's npm OIDC trusted publishing.
+⁴ python-sdk `release.yml` is tag-triggered but broken — it references
+`${{ inputs.registry-token }}` in a non-`workflow_call` workflow, so the PyPI
+token resolves empty; it also has no checkout, build, or test.
+⁵ dotnet-sdk `publish.yml` triggers on `release: [published]`, not a tag;
+build runs inside `publish.sh`; the secret is `NUGET_API_KEY`, not the `spec`
+repo's `NUGET_REGISTRY_TOKEN`.
+⁶ haskell-sdk `release.yml` is the closest — tag-triggered, builds, tests, and
+publishes to Hackage with `HACKAGE_REGISTRY_TOKEN` — but the package version
+is hand-edited in the `.cabal` files rather than derived from the tag (§2).
 
 ---
 
@@ -135,6 +172,6 @@ Notes on capability cells:
   meaningful against the SDK commits this umbrella pins.
 - Cells conservative: ✅ only for an exposed, idiomatic public method.
 - Normative "should" lives in [`sdk-api-surface.md`](./sdk-api-surface.md) and
-  [`sdk-ci-requirements.md`](./sdk-ci-requirements.md); not restated here.
+  [`sdk-pipeline-requirements.md`](./sdk-pipeline-requirements.md); not restated here.
 </content>
 </invoke>

@@ -13,26 +13,29 @@ repo pins, work out what it actually exposes, and rewrite
 ## When to use
 
 - After a `spec/` submodule bump — new RPCs may exist, version cells go stale.
-- After any `sdks/*` pointer change — method, CI, or capability cells may move.
+- After any `sdks/*` pointer change — method, CI, release, or capability cells
+  may move.
 - After a [`bump-sdk-spec`](../bump-sdk-spec/SKILL.md) run, to refresh the
   "Spec / proto-gen version per SDK" table (that skill's final step delegates
   here).
 - Whenever the matrix is suspected stale and you want it re-grounded.
 
 Do **not** use this to change what an SDK *should* expose — normative "should"
-lives in `reference/sdk-api-surface.md` and `reference/sdk-ci-requirements.md`.
-This skill only records what each SDK *does* today.
+lives in `reference/sdk-api-surface.md` and
+`reference/sdk-pipeline-requirements.md`. This skill only records what each
+SDK *does* today.
 
 ## Prerequisites
 
 - Submodules initialized: `git submodule update --init --recursive`.
 - Know the pinned spec release: `git -C spec describe --tags`.
-- Read the two normative references — they define every row/column the matrix
+- Read the normative references — they define every row/column the matrix
   is scored against:
   - `reference/sdk-api-surface.md` — the RPC methods and cross-cutting
     capabilities that make up the matrix rows.
-  - `reference/sdk-ci-requirements.md` — the mandatory CI contract scored in
-    the "CI conformance" table.
+  - `reference/sdk-pipeline-requirements.md` — the mandatory CI and release
+    pipeline contract scored in the "CI conformance" and "Release conformance"
+    tables.
 - Per-SDK build toolchains are **not** required — this is source inspection,
   not a build. (`bump-sdk-spec` covers build verification.)
 
@@ -52,21 +55,28 @@ python-sdk, dotnet-sdk, haskell-sdk.
 2. **CI conformance.** Inspect each SDK's `.github/workflows/`. A cell is ✅
    only for a CI workflow (not release/publish-only) running on the mandated
    trigger. Score PR trigger, main-push trigger, build job, test job, and the
-   overall Conformant verdict per `sdk-ci-requirements.md`. Footnote anything
-   partial (e.g. test-only, tag-triggered-only).
+   overall Conformant verdict per `sdk-pipeline-requirements.md` §1. Footnote
+   anything partial (e.g. test-only, tag-triggered-only).
 
-3. **RPC method coverage.** For each service group in the matrix (Query,
+3. **Release conformance.** Inspect each SDK's release workflow — the
+   `.github/workflows/` file that publishes a package, distinct from CI.
+   Against `sdk-pipeline-requirements.md` §2, score the tag-push trigger, the
+   build / test / publish stages (✅ dedicated gated stage, ⚠️ incidental,
+   ❌ absent), and whether the registry and publish secret name match the
+   `spec` repo (§4). Footnote anything partial.
+
+4. **RPC method coverage.** For each service group in the matrix (Query,
    Submit, Sync, Watch), search the SDK's client/public surface for each
    method listed in `sdk-api-surface.md`. Score ✅ implemented & idiomatic /
    ⚠️ partial or non-idiomatic / ❌ missing. Be conservative: ✅ only for an
    exposed, idiomatic public method.
 
-4. **Cross-cutting capabilities.** Score each capability row (TLS, auth,
+5. **Cross-cutting capabilities.** Score each capability row (TLS, auth,
    streaming, sync/async, FieldMask, pagination, retry, batch submit,
    high-level helpers) the same way; use `—` where not applicable to the
    language.
 
-5. **Rewrite `reference/sdk-parity.md`.** Update every table, the pinned-spec
+6. **Rewrite `reference/sdk-parity.md`.** Update every table, the pinned-spec
    line in the header, and all footnotes. Keep the existing structure, legend,
    and the "Derived, not authoritative" disclaimer. Do not invent rows — the
    row set comes from `sdk-api-surface.md`; if the spec added a new RPC, add
