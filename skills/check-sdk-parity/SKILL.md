@@ -22,7 +22,7 @@ repo pins, work out what it actually exposes, and rewrite
 
 Do **not** use this to change what an SDK *should* expose — normative "should"
 lives in `reference/sdk-api-surface.md` and
-`reference/sdk-pipeline-requirements.md`. This skill only records what each
+`reference/sdk-pipeline.md`. This skill only records what each
 SDK *does* today.
 
 ## Prerequisites
@@ -33,7 +33,7 @@ SDK *does* today.
   is scored against:
   - `reference/sdk-api-surface.md` — the RPC methods and cross-cutting
     capabilities that make up the matrix rows.
-  - `reference/sdk-pipeline-requirements.md` — the mandatory CI and release
+  - `reference/sdk-pipeline.md` — the mandatory CI and release
     pipeline contract scored in the "CI conformance" and "Release conformance"
     tables.
 - Per-SDK build toolchains are **not** required — this is source inspection,
@@ -55,12 +55,12 @@ python-sdk, dotnet-sdk, haskell-sdk.
 2. **CI conformance.** Inspect each SDK's `.github/workflows/`. A cell is ✅
    only for a CI workflow (not release/publish-only) running on the mandated
    trigger. Score PR trigger, main-push trigger, build job, test job, and the
-   overall Conformant verdict per `sdk-pipeline-requirements.md` §1. Footnote
+   overall Conformant verdict per `sdk-pipeline.md` §1. Footnote
    anything partial (e.g. test-only, tag-triggered-only).
 
 3. **Release conformance.** Inspect each SDK's release workflow — the
    `.github/workflows/` file that publishes a package, distinct from CI.
-   Against `sdk-pipeline-requirements.md` §2, score the tag-push trigger, the
+   Against `sdk-pipeline.md` §2, score the tag-push trigger, the
    build / test / publish stages (✅ dedicated gated stage, ⚠️ incidental,
    ❌ absent), and whether the registry and publish secret name match the
    `spec` repo (§4). Footnote anything partial.

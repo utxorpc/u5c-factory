@@ -2,7 +2,7 @@
 
 **Status:** living reference, reverse-engineered from the SDK submodules.
 What each SDK does today, against the [API surface](./sdk-api-surface.md) and
-[pipeline requirements](./sdk-pipeline-requirements.md).
+[pipeline requirements](./sdk-pipeline.md).
 
 > Derived, not authoritative. When a cell disagrees with a submodule, trust
 > the submodule and update this file. Re-derive after any `spec/` bump or SDK
@@ -43,7 +43,7 @@ matches spec v0.19.x. The `*.cabal` range `>=0.0.19 && <0.0.20` admits it, but
 ## CI conformance vs. mandatory contract
 
 Each SDK's `.github/workflows/` against the CI pipeline contract in
-[pipeline requirements](./sdk-pipeline-requirements.md) §1. A cell is ✅ only for a CI
+[pipeline requirements](./sdk-pipeline.md) §1. A cell is ✅ only for a CI
 workflow (not release/publish-only) running on the mandated trigger; a
 build/test that runs only on tag/release is ❌ for the contract.
 
@@ -69,7 +69,7 @@ test suites compile but are not executed.
 ## Release conformance vs. mandatory contract
 
 Each SDK's release workflow against the release pipeline contract in
-[pipeline requirements](./sdk-pipeline-requirements.md) §2. A stage cell is ✅ only
+[pipeline requirements](./sdk-pipeline.md) §2. A stage cell is ✅ only
 for a dedicated, gated stage on the release path; ⚠️ for one that happens
 incidentally (e.g. via a `prepublish` hook or a build script) but is not a
 distinct gate. "registry/auth = spec" is ✅ only when the registry and the
@@ -172,6 +172,6 @@ Notes on capability cells:
   meaningful against the SDK commits this umbrella pins.
 - Cells conservative: ✅ only for an exposed, idiomatic public method.
 - Normative "should" lives in [`sdk-api-surface.md`](./sdk-api-surface.md) and
-  [`sdk-pipeline-requirements.md`](./sdk-pipeline-requirements.md); not restated here.
+  [`sdk-pipeline.md`](./sdk-pipeline.md); not restated here.
 </content>
 </invoke>
