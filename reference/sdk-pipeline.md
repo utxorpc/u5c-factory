@@ -142,9 +142,16 @@ the *expected shape*, not a forced verbatim script.
 
 ### Release registry & auth
 Each SDK publishes to the **same registry, with the same auth mechanism, that
-the `spec` repo's codegen uses for that language**. Secret names MUST match the
-`spec` repo's codegen secret names verbatim, so the organization configures one
-secret set.
+the `spec` repo's codegen uses for that language**. Where that mechanism is a
+secret, the name MUST match the `spec` repo's codegen secret name verbatim, so
+the organization configures one secret set.
+
+**Prefer OIDC trusted publishing wherever the registry supports it.** A
+short-lived credential minted per run cannot leak from storage, expire
+unnoticed, or outlive the person who created it. A long-lived token is the
+fallback for registries that offer nothing better — not the default. Migrating
+a language moves `spec` and the SDK together; leaving them on different
+mechanisms breaks the rule above.
 
 | SDK | Registry | Auth mechanism | Secret name | Publish command |
 |---|---|---|---|---|
@@ -152,7 +159,7 @@ secret set.
 | go-sdk | Go module proxy (git-tag native) | default `GITHUB_TOKEN` | — | git tag + GitHub Release + proxy notify |
 | node-sdk | npmjs.org | OIDC trusted publishing (`id-token: write`, no token) | — | `npm publish --access public` |
 | python-sdk | PyPI | API token, username `__token__` | `PYPI_REGISTRY_TOKEN` | `poetry publish` |
-| dotnet-sdk | nuget.org | API key | `NUGET_REGISTRY_TOKEN` | `dotnet nuget push --skip-duplicate` |
+| dotnet-sdk | nuget.org | OIDC trusted publishing (`id-token: write`, `NuGet/login`) | — ¹ | `dotnet nuget push --skip-duplicate` |
 | haskell-sdk | Hackage | API key (`HACKAGE_KEY` env) | `HACKAGE_REGISTRY_TOKEN` | `stack upload` |
 
 Notes:
@@ -165,6 +172,25 @@ Notes:
 - **node-sdk** uses npm OIDC trusted publishing — no static token. The publish
   job needs `permissions: id-token: write`, and the package's trusted publisher
   must be configured on npmjs.org before the first release.
+- ¹ **dotnet-sdk** uses NuGet trusted publishing, which unlike npm's is *not*
+  tokenless: the job mints an OIDC token, `NuGet/login@v1` exchanges it at
+  nuget.org for an API key valid **one hour and usable once**, and the push
+  consumes that. Consequences the pipeline must respect:
+  - the exchange runs immediately before the push, never at job start;
+  - the job needs `permissions: id-token: write`;
+  - `NuGet/login` needs the nuget.org **profile name** (not an email) that owns
+    the policy. It is public — nuget.org lists it as the package owner — so it
+    belongs in an Actions **variable** (`NUGET_USER`), not a secret. A variable
+    can be read back and checked; a wrong secret surfaces only as a failed
+    release;
+  - a trusted publishing policy must exist on nuget.org before the first
+    release, binding owner + repository + **workflow file**. For a reusable
+    workflow, confirm whether the registry validates the entry workflow
+    (`workflow_ref`) or the workflow defining the job (`job_workflow_ref`) —
+    they differ, and naming the wrong one fails the exchange at publish time.
+- **Dry-runs and OIDC:** a token exchange is a live registry call. Any dry-run
+  path (§2) MUST skip it, or the dry-run both contacts the registry it is meant
+  to avoid and burns a single-use credential.
 - **Idempotency:** re-running a release for an already-published version MUST
   NOT overwrite the published artifact. Registries that reject duplicate
   versions by policy satisfy this for free; where the registry does not

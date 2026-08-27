@@ -75,26 +75,27 @@ when the registry and the publish mechanism match the `spec` repo's codegen.
 
 | SDK | tag trigger | verify | build | test | publish | release | auth = spec | Conformant |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| rust-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
+| rust-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | go-sdk | ✅ | — ¹ | ⚠️ ¹ | ⚠️ ¹ | ✅ | ✅ | ✅ | ⚠️ |
-| node-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
-| python-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
-| dotnet-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ❌ ³ | ⚠️ |
+| node-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| python-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| dotnet-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ³ | ✅ |
 | haskell-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ¹ go-sdk's `publish.yml` runs `go build ./...` and `go test ./...` as steps
 inside the release job rather than as separate gated stages. `verify` is `—`
 rather than a gap: a Go module has no manifest version to check a tag
 against, so §3's tag/manifest rule is vacuous here.
-² The `release` stage (§2.1) is newly mandated; PRs adding it are open —
-rust-sdk #40, python-sdk #12, dotnet-sdk #40, node-sdk #65. Releases for the
-current published versions were backfilled by hand in the meantime, so every
-SDK has a matching GitHub Release today even where the pipeline does not yet
-create one.
-³ dotnet-sdk publishes via NuGet trusted publishing (OIDC → short-lived key),
-while `spec` still pushes `Utxorpc.Spec` with the long-lived
-`NUGET_REGISTRY_TOKEN`. The SDK is ahead of both the contract and `spec`
-here; §4 needs amending and `spec` migrating, after which this becomes ✅.
+² The `release` stage (§2.1) is implemented in all six pipelines —
+rust-sdk #40, python-sdk #12, dotnet-sdk #40, node-sdk #65, with go-sdk and
+haskell-sdk already carrying one. Releases for the versions published before
+the stage existed were backfilled by hand, so every SDK's latest published
+version has a matching GitHub Release. The stage itself is first exercised on
+each SDK's next tag.
+³ Both `dotnet-sdk` and `spec` now publish via NuGet trusted publishing
+(OIDC → short-lived key); `spec` migrated in spec#212 and §4 records the
+mechanism. `NUGET_REGISTRY_TOKEN` is referenced nowhere in either repo, but is
+retained on `spec` until a release exercises the new path.
 
 Re-derived 2026-08-27 against the post-rewrite pipelines. The API-surface
 tables below were **not** re-derived in the same pass and may lag.
