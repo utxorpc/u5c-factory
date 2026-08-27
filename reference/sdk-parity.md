@@ -17,26 +17,25 @@ SDK refs: rust-sdk, go-sdk, node-sdk, python-sdk, dotnet-sdk, haskell-sdk.
 ## Spec / proto-gen version per SDK
 
 Umbrella pins `spec/` at **v0.19.2**; "current" = the SDK's proto-gen
-dependency matches that.
+dependency resolves to that.
 
-| SDK | Dependency | Version | vs pinned spec (v0.19.2) |
-|---|---|---|:--:|
-| rust-sdk | `utxorpc-spec` (crate) | 0.19.0 | ⚠️ behind ¹ |
-| go-sdk | `github.com/utxorpc/go-codegen` | v0.19.0 | ⚠️ behind ¹ |
-| node-sdk | `@utxorpc/spec` (npm) | 0.19.0 | ⚠️ behind ¹ |
-| python-sdk | `utxorpc-spec` (pypi) | 0.19.2 | ✅ current ² |
-| dotnet-sdk | `Utxorpc.Spec` (nuget) | 0.19.2-alpha | ✅ current ³ |
-| haskell-sdk | `utxorpc` (hackage) | ≥0.0.19 <0.0.20 | ⚠️ behind ⁴ |
+| SDK | Dependency | Declared | Published SDK | vs pinned spec |
+|---|---|---|---|:--:|
+| rust-sdk | `utxorpc-spec` (crate) | `0.19.0` | 0.14.0 | ✅ current ¹ |
+| go-sdk | `github.com/utxorpc/go-codegen` | `v0.19.2` | v0.1.0 | ✅ current |
+| node-sdk | `@utxorpc/spec` (npm) | `^0.19.2` | 0.9.0 | ✅ current |
+| python-sdk | `utxorpc-spec` (pypi) | `0.19.2` | 0.2.0 | ✅ current |
+| dotnet-sdk | `Utxorpc.Spec` (nuget) | `0.19.2-alpha` | 1.8.0-alpha | ✅ current ² |
+| haskell-sdk | `utxorpc` (hackage) | `>=0.0.19 <0.0.20` | 0.0.5.0 | ✅ current ³ |
 
-¹ Pins the `0.19.0` release — two patch releases behind the pinned spec
-(v0.19.2).
-² python-sdk's pinned commit is on the `fix/spec-0.19-protobuf` branch, not
-`main`; that branch also drops several Query methods — see the Query table.
-³ `Utxorpc.Spec` ships on NuGet as an `-alpha` prerelease; `0.19.2-alpha`
+¹ Written as `"0.19.0"`, which Cargo reads as the caret range `^0.19.0` and
+resolves to 0.19.2. Effectively current, though the declared floor is stale.
+² `Utxorpc.Spec` ships on NuGet as an `-alpha` prerelease; `0.19.2-alpha`
 matches the pinned spec tag.
-⁴ haskell `utxorpc` uses independent `0.0.x` numbering; the `0.0.19` line
-matches spec v0.19.x. The `*.cabal` range `>=0.0.19 && <0.0.20` admits it, but
-`stack.yaml` extra-deps still pin `utxorpc-0.0.18.1`.
+³ haskell `utxorpc` uses independent `0.0.x` numbering; the `0.0.19` line
+matches spec v0.19.x. `stack.yaml` extra-deps pin `utxorpc-0.0.19.2`
+exactly. Note `stack.yaml.lock` still records `0.0.18.1` and has not been
+regenerated since; stack detects the mismatch and relocks at build time.
 
 ---
 
@@ -69,37 +68,36 @@ test suites compile but are not executed.
 ## Release conformance vs. mandatory contract
 
 Each SDK's release workflow against the release pipeline contract in
-[pipeline requirements](./sdk-pipeline.md) §2. A stage cell is ✅ only
-for a dedicated, gated stage on the release path; ⚠️ for one that happens
-incidentally (e.g. via a `prepublish` hook or a build script) but is not a
-distinct gate. "registry/auth = spec" is ✅ only when the registry and the
-publish secret name match the `spec` repo's codegen exactly.
+[pipeline requirements](./sdk-pipeline.md) §2. A stage cell is ✅ only for a
+dedicated, gated stage on the release path; ⚠️ for one that happens
+incidentally but is not a distinct gate. "registry/auth = spec" is ✅ only
+when the registry and the publish mechanism match the `spec` repo's codegen.
 
-| SDK | tag-push trigger | build stage | test stage | publish stage | registry/auth = spec | Conformant |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| rust-sdk | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ¹ |
-| go-sdk | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ ² |
-| node-sdk | ❌ | ⚠️ | ❌ | ✅ | ❌ | ❌ ³ |
-| python-sdk | ✅ | ❌ | ❌ | ⚠️ | ❌ | ❌ ⁴ |
-| dotnet-sdk | ❌ | ⚠️ | ❌ | ✅ | ⚠️ | ❌ ⁵ |
-| haskell-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ ⁶ |
+| SDK | tag trigger | verify | build | test | publish | release | auth = spec | Conformant |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| rust-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
+| go-sdk | ✅ | — ¹ | ⚠️ ¹ | ⚠️ ¹ | ✅ | ✅ | ✅ | ⚠️ |
+| node-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
+| python-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ✅ | ⚠️ |
+| dotnet-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ ² | ❌ ³ | ⚠️ |
+| haskell-sdk | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-¹ rust-sdk has no release/publish workflow at all; `Cargo.toml` sets
-`publish = false`.
-² go-sdk `publish.yml` triggers on `v*.*.*` tags and creates a GitHub Release
-+ Go-proxy notify, but runs no `go build` / `go test` gate beforehand.
-³ node-sdk `publish.yml` triggers on `release: [published]`, not a tag; build
-runs only via the `prepublish` hook; publish uses `NODE_AUTH_TOKEN` rather
-than the `spec` repo's npm OIDC trusted publishing.
-⁴ python-sdk `release.yml` is tag-triggered but broken — it references
-`${{ inputs.registry-token }}` in a non-`workflow_call` workflow, so the PyPI
-token resolves empty; it also has no checkout, build, or test.
-⁵ dotnet-sdk `publish.yml` triggers on `release: [published]`, not a tag;
-build runs inside `publish.sh`; the secret is `NUGET_API_KEY`, not the `spec`
-repo's `NUGET_REGISTRY_TOKEN`.
-⁶ haskell-sdk `release.yml` is the closest — tag-triggered, builds, tests, and
-publishes to Hackage with `HACKAGE_REGISTRY_TOKEN` — but the package version
-is hand-edited in the `.cabal` files rather than derived from the tag (§2).
+¹ go-sdk's `publish.yml` runs `go build ./...` and `go test ./...` as steps
+inside the release job rather than as separate gated stages. `verify` is `—`
+rather than a gap: a Go module has no manifest version to check a tag
+against, so §3's tag/manifest rule is vacuous here.
+² The `release` stage (§2.1) is newly mandated; PRs adding it are open —
+rust-sdk #40, python-sdk #12, dotnet-sdk #40, node-sdk #65. Releases for the
+current published versions were backfilled by hand in the meantime, so every
+SDK has a matching GitHub Release today even where the pipeline does not yet
+create one.
+³ dotnet-sdk publishes via NuGet trusted publishing (OIDC → short-lived key),
+while `spec` still pushes `Utxorpc.Spec` with the long-lived
+`NUGET_REGISTRY_TOKEN`. The SDK is ahead of both the contract and `spec`
+here; §4 needs amending and `spec` migrating, after which this becomes ✅.
+
+Re-derived 2026-08-27 against the post-rewrite pipelines. The API-surface
+tables below were **not** re-derived in the same pass and may lag.
 
 ---
 
