@@ -67,11 +67,39 @@ pre-release suffix is permitted (`v1.7.0-alpha`, `v0.2.0-rc.1`).
 | **build** | Compile/transpile the codebase from a clean checkout of the tagged commit. |
 | **test** | Run the SDK's full test suite. |
 | **publish** | Push the package to its registry (§4). |
+| **release** | Create a GitHub Release for the tag (§2.1). |
 
 The stages run **in order** and each gates the next: `publish` MUST NOT run
-unless `build` and `test` both succeeded. There is no partial publish — a
-failed release leaves nothing on the registry. The release re-runs the full
-build and test suite (§1) so a tag can never publish an untested artifact.
+unless `build` and `test` both succeeded, and `release` MUST NOT run unless
+`publish` succeeded. There is no partial publish — a failed release leaves
+nothing on the registry. The release re-runs the full build and test suite
+(§1) so a tag can never publish an untested artifact.
+
+### 2.1 The GitHub Release
+
+Every published version MUST have a GitHub Release for its tag. The registry
+is where the artifact lives; the GitHub Release is where the repository
+records that it shipped, and the two must not disagree.
+
+- The release is created by the pipeline, not by hand. A version that reaches
+  a registry without one is a defect.
+- It MUST be gated on `publish`, so no release announces a version that never
+  reached its registry.
+- It MUST be marked as a pre-release when the tag carries a SemVer
+  pre-release suffix (`v1.8.0-alpha`).
+- Release notes SHOULD be generated rather than authored.
+- Attaching build artifacts is OPTIONAL, and worth doing where the artifact
+  is not otherwise fetchable from the registry (haskell-sdk attaches sdists).
+
+Realization is the SDK's own: `softprops/action-gh-release` and the GitHub
+API are both fine. What is fixed is that the stage exists, is automatic, and
+runs after `publish`.
+
+The stage SHOULD be a job separate from `publish` rather than a step within
+it. `release` needs `contents: write`, while publish jobs that authenticate
+by OIDC (§4) run with `contents: read` and only `id-token: write`; folding
+the two together would widen the credential-bearing job's permissions for no
+reason.
 
 ---
 
@@ -162,8 +190,8 @@ Notes:
 ### Recommended but not mandated
 
 Matrix builds across language versions/OSes, dependency caching, coverage
-reporting, `workflow_dispatch` dry-run paths, generated release notes, signed
-tags. These are *aspirational*; their adoption is tracked in the
+reporting, `workflow_dispatch` dry-run paths, release-artifact attachment,
+signed tags. These are *aspirational*; their adoption is tracked in the
 [parity matrix](./sdk-parity.md), not required here.
 
 ---
