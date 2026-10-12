@@ -87,8 +87,9 @@ python-sdk, dotnet-sdk, haskell-sdk.
    language.
 
 6. **Rewrite `reference/sdk-parity.md`.** Update every table, the pinned-spec
-   line and the pinned-commits line in the header, and all footnotes. Keep the existing structure, legend,
-   and the "Derived, not authoritative" disclaimer. Do not invent rows — the
+   line and the pinned-commits line in the header, and all footnotes. Keep the
+   existing structure, legend, and the "Derived, not authoritative"
+   disclaimer. Do not invent rows — the
    row set comes from `sdk-api-surface.md`; if the spec added a new RPC, add
    the row and score it.
 
