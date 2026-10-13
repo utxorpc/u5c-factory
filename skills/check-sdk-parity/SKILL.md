@@ -51,6 +51,16 @@ python-sdk, dotnet-sdk, haskell-sdk.
    `Utxorpc.Spec`; haskell `*.cabal` → `utxorpc`, independent `0.0.x`
    numbering). Score each ✅ current / ⚠️ / ❌ behind against the pinned spec
    tag, with a footnote when a registry release is missing or unverified.
+   Then fill the **API version imported** column: the interface namespace or
+   namespaces (`v1alpha`, `v1beta`, `v1`) that the SDK's own code imports from
+   that dependency, which the package version alone does not show. Search the
+   library source for imports of versioned spec paths (e.g. rust
+   `utxorpc_spec::utxorpc::v1alpha`, go `go-codegen/utxorpc/v1beta/...`,
+   python `utxorpc_spec.utxorpc.v1alpha`, dotnet `Utxorpc.V1Alpha`, haskell
+   `Proto.Utxorpc.V1alpha`). Where the SDK imports an unversioned package root
+   (node `@utxorpc/spec`), resolve which namespace that root re-exports at the
+   pinned spec (`spec/gen/node/src/index.ts`). Footnote an SDK that imports
+   more than one namespace, naming which package uses which.
 
 2. **CI conformance.** Inspect each SDK's `.github/workflows/`. A cell is ✅
    only for a CI workflow (not release/publish-only) running on the mandated
@@ -77,8 +87,9 @@ python-sdk, dotnet-sdk, haskell-sdk.
    language.
 
 6. **Rewrite `reference/sdk-parity.md`.** Update every table, the pinned-spec
-   line in the header, and all footnotes. Keep the existing structure, legend,
-   and the "Derived, not authoritative" disclaimer. Do not invent rows — the
+   line and the pinned-commits line in the header, and all footnotes. Keep the
+   existing structure, legend, and the "Derived, not authoritative"
+   disclaimer. Do not invent rows — the
    row set comes from `sdk-api-surface.md`; if the spec added a new RPC, add
    the row and score it.
 
@@ -87,7 +98,9 @@ python-sdk, dotnet-sdk, haskell-sdk.
 - Every cell traces to something observed in a submodule at its pinned commit —
   no cell left from a previous derivation without re-checking.
 - The pinned-spec version in the header matches `git -C spec describe --tags`.
-- The version table matches each SDK's manifest exactly.
+- The version table matches each SDK's manifest exactly, and each "API version
+  imported" cell matches the namespaces its source imports at the pin.
+- The header's pin line names the exact `spec` and SDK commits derived against.
 - `git diff reference/sdk-parity.md` is reviewable: each changed cell
   corresponds to a real change in the submodules since the last derivation.
 - Legend, footnotes, and the derived-not-authoritative note are intact.
