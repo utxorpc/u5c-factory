@@ -86,6 +86,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
+name = "cardano-vectors"
+version = "0.0.0"
+dependencies = [
+ "hex",
+ "pallas-traverse",
+ "pallas-utxorpc",
+ "prost",
+]
+
+[[package]]
 name = "cc"
 version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -678,16 +688,6 @@ version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52c2c1bf36ddb1a1c396b3601a3cec27c2462e45f07c386894ec3ccf5332bd16"
 dependencies = [
- "prost",
-]
-
-[[package]]
-name = "protocol-vectors"
-version = "0.0.0"
-dependencies = [
- "hex",
- "pallas-traverse",
- "pallas-utxorpc",
  "prost",
 ]
 
