@@ -1,8 +1,6 @@
-# Protocol vectors
+# Cardano vectors
 
-UTxO RPC `Block` messages mapped from real Cardano blocks, one per protocol version.
-SDKs copy these files and decode them in their tests, which shows each SDK's generated
-types read the same data at each protocol version.
+`cardano.Block` messages mapped from real Cardano blocks, one per protocol version.
 
 | file | what it is |
 |---|---|

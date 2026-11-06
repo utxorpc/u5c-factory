@@ -1,4 +1,4 @@
-//! Maps the blocks in `../blocks` to UTxO RPC messages and writes the vectors.
+//! Maps the Cardano blocks in `../blocks` to UTxO RPC messages and writes the vectors.
 
 use pallas_utxorpc::{v1alpha, v1beta, LedgerContext, TxoRef, UtxoMap};
 use prost::Message;
