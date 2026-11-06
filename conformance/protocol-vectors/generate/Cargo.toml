@@ -1,0 +1,13 @@
+[package]
+name = "protocol-vectors"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+hex = "0.4"
+pallas-traverse = { version = "=1.5.0-rc.1", features = ["unstable"] }
+pallas-utxorpc = { version = "=1.5.0-rc.1", features = ["unstable"] }
+prost = "0.13"
